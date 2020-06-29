@@ -18,6 +18,7 @@ struct ContentView: View {
     @State private var showingError = false
     @State private var totalScore = 0
     @State private var wordScore = 0
+    @State private var showingScoringInfo = false
     
     var body: some View {
         NavigationView {
@@ -28,6 +29,9 @@ struct ContentView: View {
                     .padding()
                 Text("Your score")
                     .fontWeight(.bold)
+                    .onTapGesture {
+                        self.showingScoringInfo = true
+                }
                 HStack {
                     Text("This word: \(wordScore)")
                     Spacer(minLength: 5)
@@ -45,6 +49,9 @@ struct ContentView: View {
             .onAppear(perform: startGame)
             .alert(isPresented: $showingError, content: {
                 Alert(title: Text(errorTitle), message: Text(errorMessage), dismissButton: .default(Text("OK")))
+            })
+            .alert(isPresented: $showingScoringInfo, content: {
+                Alert(title: Text("Scoring based on word length"), message: Text("2-4 letters: (length) points\n5-6 letters: (length + 1) points\n7 letters: 10 points\n8 letters: 15 points!"), dismissButton: .default(Text("OK")))
             })
         }
     }
@@ -77,8 +84,8 @@ struct ContentView: View {
         }
         
         usedWords.append(answer)
-        wordScore += answer.count
-        totalScore += answer.count
+        wordScore += scoreFor(answer)
+        totalScore += scoreFor(answer)
         newWord = ""
     }
     
@@ -130,6 +137,21 @@ struct ContentView: View {
     
     func isNotRootWord(word: String) -> Bool {
         !(word == rootWord)
+    }
+    
+    func scoreFor(_ word: String) -> Int {
+        switch word.count {
+        case 2...4:
+            return word.count
+        case 5...6:
+            return word.count + 1
+        case 7:
+            return word.count + 3
+        case 8:
+            return 15
+        default:
+            return 0
+        }
     }
     
 }
